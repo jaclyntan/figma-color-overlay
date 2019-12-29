@@ -1,0 +1,246 @@
+<style>
+  * {
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+  }
+
+  /*  Typography */
+  @font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 400;
+    src: url("https://rsms.me/inter/font-files/Inter-Regular.woff2?v=3.7") format("woff2"), url("https://rsms.me/inter/font-files/Inter-Regular.woff?v=3.7") format("woff");
+  }
+
+  @font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 500;
+    src: url("https://rsms.me/inter/font-files/Inter-Medium.woff2?v=3.7") format("woff2"), url("https://rsms.me/inter/font-files/Inter-Medium.woff2?v=3.7") format("woff");
+  }
+
+  @font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 600;
+    src: url("https://rsms.me/inter/font-files/Inter-SemiBold.woff2?v=3.7") format("woff2"), url("https://rsms.me/inter/font-files/Inter-SemiBold.woff2?v=3.7") format("woff");
+  }
+
+  .label {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-align: center;
+    -ms-flex-align: center;
+    align-items: center;
+    cursor: default;
+    color: rgba(0, 0, 0, 0.8);
+    font-family: "Inter", sans-serif;
+    font-weight: 600;
+    margin: 7px;
+    font-size: 11px;
+    line-height: 16px;
+    letter-spacing: 0.005em;
+  }
+
+  .button {
+    display: inline-block;
+    -ms-flex-negative: 0;
+    flex-shrink: 0;
+    height: 30px;
+    margin: 0 5px;
+    padding: 5px 16px 5px 16px;
+    text-decoration: none;
+    border: 2px solid transparent;
+    border-radius: 6px;
+    outline: none;
+  }
+
+  .button:hover {
+    color: rgba(0, 0, 0, 0.8);
+    background-color: #ffffff;
+    border: 2px solid rgba(0, 0, 0, 0.1);
+  }
+
+  .button--primary {
+    font-family: "Inter", sans-serif;
+    font-weight: 500;
+    font-size: 11px;
+    line-height: 16px;
+    letter-spacing: 0.01em;
+    color: #ffffff;
+    background-color: #18a0fb;
+  }
+
+  .input {
+    font-family: "Inter", sans-serif;
+    font-weight: 400;
+    font-size: 11px;
+    line-height: 16px;
+    letter-spacing: 0.005em;
+    position: relative;
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    overflow: visible;
+    -webkit-box-align: center;
+    -ms-flex-align: center;
+    align-items: center;
+    width: 100%;
+    padding: 8px 4px 8px 7px;
+    color: rgba(0, 0, 0, 0.8);
+    border: 1px solid transparent;
+    border-radius: 2px;
+    outline: none;
+    background-color: #ffffff;
+    margin: 5px 0;
+  }
+
+  .input:hover {
+    color: rgba(0, 0, 0, 0.8);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+  }
+
+  .input::-moz-selection {
+    color: #000000;
+    background-color: rgba(24, 145, 251, 0.3);
+  }
+
+  .input::selection {
+    color: #000000;
+    background-color: rgba(24, 145, 251, 0.3);
+  }
+
+  .input::-webkit-input-placeholder {
+    color: rgba(0, 0, 0, 0.3);
+    border: 1px solid transparent;
+  }
+
+  .input:-ms-input-placeholder {
+    color: rgba(0, 0, 0, 0.3);
+    border: 1px solid transparent;
+  }
+
+  .input::-ms-input-placeholder {
+    color: rgba(0, 0, 0, 0.3);
+    border: 1px solid transparent;
+  }
+
+  .input::placeholder {
+    color: rgba(0, 0, 0, 0.3);
+    border: 1px solid transparent;
+  }
+
+  .wrapper {
+    position: relative;
+  }
+</style>
+
+<div id="colorize">
+  <label for="color" class="label">Color</label>
+  <div class="wrapper">
+    <input id="color" type="text" value="000" class="input" />
+  </div>
+  <button id="submit" type="submit" value="submit" class="button button--primary">Colorize</button>
+</div>
+
+
+
+
+
+
+
+
+<script>
+  let colorOverlay = document.getElementById('color'),
+    colorize = document.getElementById('submit'),
+    regEx = /(^#|)+([a-fA-F0-9]{6}|[a-fA-F0-9]{3})$/i,
+    color = '';
+  colorOverlay.addEventListener("click", function () {
+    this.select();
+  });
+  
+  colorize.addEventListener("click", function () {
+    if (regEx.test(colorOverlay.value) === true) {
+      parent.postMessage({
+        pluginMessage: {
+          type: 'colorize',
+          color: colorOverlay.value
+        }
+      }, '*')
+    } else {
+      parent.postMessage({
+        pluginMessage: {
+          type: 'hex error',
+          notification: '🖌️ Please enter a valid hex code 🎨'
+        }
+      }, '*')
+    }
+  }, false);
+
+
+  // Encoding an image is also done by sticking pixels in an
+  // HTML canvas and by asking the canvas to serialize it into
+  // an actual PNG file via canvas.toBlob().
+  async function encode(canvas, ctx, imageData) {
+    ctx.putImageData(imageData, 0, 0)
+    return await new Promise((resolve, reject) => {
+      canvas.toBlob(blob => {
+        const reader = new FileReader()
+        reader.onload = () => resolve(new Uint8Array(reader.result))
+        reader.onerror = () => reject(new Error('Could not read from blob'))
+        reader.readAsArrayBuffer(blob)
+      })
+    })
+  }
+
+  // Decoding an image can be done by sticking it in an HTML
+  // canvas, as we can read individual pixels off the canvas.
+  async function decode(canvas, ctx, bytes) {
+    const url = URL.createObjectURL(new Blob([bytes]))
+    const image = await new Promise((resolve, reject) => {
+      const img = new Image()
+      img.onload = () => resolve(img)
+      img.onerror = () => reject()
+      img.src = url
+    })
+    canvas.width = image.width
+    canvas.height = image.height
+    ctx.drawImage(image, 0, 0)
+    const imageData = ctx.getImageData(0, 0, image.width, image.height)
+    return imageData
+  }
+
+
+  window.onmessage = async (event) => {
+    // Just get the bytes directly from the pluginMessage since
+    // that's the only type of message we'll receive in this
+    // plugin. In more complex plugins, you'll want to check the
+    // type of the message.
+    const bytes = event.data.pluginMessage.bytes
+    const color = event.data.pluginMessage.color
+
+    const canvas = document.createElement('canvas')
+    const ctx = canvas.getContext('2d')
+
+    const imageData = await decode(canvas, ctx, bytes)
+    const pixels = imageData.data
+
+    // Do the actual work of inverting the colors.
+    for (let i = 0; i < pixels.length; i += 4) {
+      pixels[i + 0] = color.r
+      pixels[i + 1] = color.g
+      pixels[i + 2] = color.b
+      // Don't invert the alpha channel.
+    }
+
+    const newBytes = await encode(canvas, ctx, imageData)
+    parent.postMessage({
+      pluginMessage: {
+        type: 'newImg',
+        bytes: newBytes
+      }
+    }, '*')
+
+  }
+</script>

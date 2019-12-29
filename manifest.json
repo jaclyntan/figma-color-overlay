@@ -1,0 +1,7 @@
+{
+  "name": "Color Overlay",
+  "id": "786223450940846289",
+  "api": "1.0.0",
+  "main": "code.js",
+  "ui": "ui.html"
+}
