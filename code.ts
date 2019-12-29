@@ -1,4 +1,4 @@
-figma.showUI(__html__, { width: 200, height: 120 });
+figma.showUI(__html__, { width: 220, height: 300 });
 
 /*!
 ♡♡♡♡♡♡♡♡♡♡♡♡♡♡♡♡♡♡
@@ -94,7 +94,7 @@ figma.ui.onmessage = msg => {
       }
     }
     selected.fills = newFills;
-  }else if (msg.type === 'hex error') {
+  } else if (msg.type === 'hex error') {
     figma.notify(msg.notification)
   }
   // figma.closePlugin();

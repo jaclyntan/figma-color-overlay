@@ -1,6 +1,5 @@
-#No SVG, no problem
+# No SVG, no problem
 
-![Figma Color Overlay](./artwork.jpg)
 
 If you've ever run into the problem of having to recolor multiple pngs (because SVGs aren't available for whatever reason), and are often switching back and forth from PS to Figma, I feel your pain.
 
