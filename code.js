@@ -15,7 +15,7 @@ Utilities
 ♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥
 ♡♡♡♡♡♡♡♡♡♡♡♡♡♡♡♡♡♡
 */
-// from https://stackoverflow.com/questions/5623838/rgb-to-hex-and-hex-to-rgb
+//credit: https://stackoverflow.com/questions/5623838/rgb-to-hex-and-hex-to-rgb
 function hex2rgb(hex) {
     // Expand shorthand form (e.g. "03F") to full form (e.g. "0033FF")
     var shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
@@ -29,7 +29,7 @@ function hex2rgb(hex) {
         b: parseInt(result[3], 16)
     } : null;
 }
-// from https://www.figma.com/plugin-docs/creating-ui/
+//credit:  https://www.figma.com/plugin-docs/creating-ui/
 function clone(val) {
     const type = typeof val;
     if (val === null) {
@@ -56,7 +56,7 @@ function clone(val) {
     }
     throw 'unknown';
 }
-//modified from https://www.figma.com/plugin-docs/working-with-images/
+//credit:  https://www.figma.com/plugin-docs/working-with-images/
 function colorizeImage(node, color) {
     return __awaiter(this, void 0, void 0, function* () {
         for (const paint of node.fills) {
@@ -103,5 +103,4 @@ figma.ui.onmessage = msg => {
     else if (msg.type === 'hex error') {
         figma.notify(msg.notification);
     }
-    // figma.closePlugin();
 };

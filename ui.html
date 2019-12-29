@@ -192,6 +192,7 @@
   const regEx = /(^#|)+([a-fA-F0-9]{6}|[a-fA-F0-9]{3})$/i;
   const color = '';
 
+  //add a click function and handle the picker etc
   newColor.addEventListener("click", function (event) {
     const picker = document.getElementsByClassName("picker");
     this.select();
@@ -209,6 +210,7 @@
     }
   });
 
+  //check the hex value and send off the data
   colorize.addEventListener("click", function () {
     if (regEx.test(newColor.value) === true) {
       parent.postMessage({
@@ -228,9 +230,7 @@
   }, false);
 
 
-  // Encoding an image is also done by sticking pixels in an
-  // HTML canvas and by asking the canvas to serialize it into
-  // an actual PNG file via canvas.toBlob().
+  //credit:  https://www.figma.com/plugin-docs/working-with-images/
   async function encode(canvas, ctx, imageData) {
     ctx.putImageData(imageData, 0, 0)
     return await new Promise((resolve, reject) => {
@@ -243,8 +243,7 @@
     })
   }
 
-  // Decoding an image can be done by sticking it in an HTML
-  // canvas, as we can read individual pixels off the canvas.
+  //credit:  https://www.figma.com/plugin-docs/working-with-images/
   async function decode(canvas, ctx, bytes) {
     const url = URL.createObjectURL(new Blob([bytes]))
     const image = await new Promise((resolve, reject) => {
@@ -260,12 +259,8 @@
     return imageData
   }
 
-
+  //credit:  https://www.figma.com/plugin-docs/working-with-images/
   window.onmessage = async (event) => {
-    // Just get the bytes directly from the pluginMessage since
-    // that's the only type of message we'll receive in this
-    // plugin. In more complex plugins, you'll want to check the
-    // type of the message.
     const bytes = event.data.pluginMessage.bytes
     const color = event.data.pluginMessage.color
 
@@ -275,12 +270,11 @@
     const imageData = await decode(canvas, ctx, bytes)
     const pixels = imageData.data
 
-    // Do the actual work of inverting the colors.
+    // colorize the image
     for (let i = 0; i < pixels.length; i += 4) {
       pixels[i + 0] = color.r
       pixels[i + 1] = color.g
       pixels[i + 2] = color.b
-      // Don't invert the alpha channel.
     }
 
     const newBytes = await encode(canvas, ctx, imageData)
