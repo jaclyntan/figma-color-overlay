@@ -145,12 +145,23 @@
     display: block;
     width: calc(100% - 30px);
   }
+
+  #swatch {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    width: 26px;
+    height: 26px;
+    background-color: #000;
+  }
 </style>
+
 <script src="https://cdn.jsdelivr.net/npm/a-color-picker@1.2.1/dist/acolorpicker.min.js"></script>
 <div id="colorize">
   <div class="label">Color</div>
   <div id="wrapper">
     <input type="text" id="new-color" class="input" value="#EEE" />
+    <div id="swatch"></div>
     <div id="color" class="picker" acp-show-rgb="no" acp-show-hsl="no" acp-show-hex="no" acp-show-alpha="no"
       acp-color="#EEE"></div>
   </div>
@@ -187,28 +198,44 @@
     return hex;
   }
   const hexField = document.getElementById('color');
+  const swatch = document.getElementById('swatch');
   const newColor = document.getElementById('new-color');
   const colorize = document.getElementById('submit');
   const regEx = /(^#|)+([a-fA-F0-9]{6}|[a-fA-F0-9]{3})$/i;
   const color = '';
 
-  //add a click function and handle the picker etc
+  //select input on click
   newColor.addEventListener("click", function (event) {
-    const picker = document.getElementsByClassName("picker");
     this.select();
+  });
+
+  //add a click function and handle the picker etc
+  swatch.addEventListener("click", function (event) {
+    const picker = document.getElementsByClassName("picker");
     if (hexField.childNodes.length === 0) {
       AColorPicker.from('#color', {
           hueBarSize: [120, 11],
           slBarSize: [200, 100]
         })
         .on('change', (picker, color) => {
-          newColor.style.backgroundColor = color;
+          swatch.style.backgroundColor = color;
           newColor.value = '#' + rgbToHex(color)
         });
     } else {
       hexField.innerHTML = "";
     }
   });
+
+  //update swatch when hex is changed
+  function checkColor() {
+    let color = newColor.value;
+    if (regEx.test(newColor.value) === true) {
+      swatch.style.backgroundColor = color;
+    }
+  }
+  newColor.addEventListener('change', checkColor);
+  newColor.addEventListener('keyup', checkColor);
+  newColor.addEventListener('paste', checkColor);
 
   //check the hex value and send off the data
   colorize.addEventListener("click", function () {
