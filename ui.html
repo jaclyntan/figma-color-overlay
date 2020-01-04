@@ -160,7 +160,7 @@
 <div id="colorize">
   <div class="label">Color</div>
   <div id="wrapper">
-    <input type="text" id="new-color" class="input" value="#EEE" />
+    <input type="text" id="new-color" class="input" value="#000" />
     <div id="swatch"></div>
     <div id="color" class="picker" acp-show-rgb="no" acp-show-hsl="no" acp-show-hex="no" acp-show-alpha="no"
       acp-color="#EEE"></div>
@@ -229,8 +229,10 @@
   //update swatch when hex is changed
   function checkColor() {
     let color = newColor.value;
+    const picker = document.getElementsByClassName("picker");
     if (regEx.test(newColor.value) === true) {
       swatch.style.backgroundColor = color;
+      picker[0].setAttribute('acp-color', color);
     }
   }
   newColor.addEventListener('change', checkColor);
