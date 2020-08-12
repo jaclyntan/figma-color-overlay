@@ -1,17 +1,17 @@
-# Colorize pngs with a click
+![Color Overlay](artwork.jpg)
 
-If you've ever run into the problem of having to recolor multiple pngs (because SVGs aren't available for whatever reason), and are often switching back and forth from PS to Figma, I feel your pain.
+## Recolor images right in Figma, saving minutes of precious time.
 
-Which is why I created this plugin- so we can now recolor pngs right in Figma, saving minutes of precious time.
+Now usable with jpegs and pngs with solid backgrounds.
+Works best with images containing solid fills and colors.
 
 ---
-
 To use:
-- import your pngs
+- import your image
 - run the plugin
-- update the hex code in the plugin modal or pick a color
-- select your image then click 'Colorize'
+- enter the hex color you want to overlay your image
+- optionally choose to remove a solid color from the image
+- click 'Colorize'
 
 ---
-
 If you run into any bugs or have feature requests please submit an issue.

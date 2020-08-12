@@ -1,4 +1,4 @@
-figma.showUI(__html__, { width: 220, height: 300 });
+figma.showUI(__html__, { width: 200, height: 300 });
 
 /*!
 ♡♡♡♡♡♡♡♡♡♡♡♡♡♡♡♡♡♡
@@ -7,6 +7,7 @@ Utilities
 ♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥
 ♡♡♡♡♡♡♡♡♡♡♡♡♡♡♡♡♡♡
 */
+
 //credit: https://stackoverflow.com/questions/5623838/rgb-to-hex-and-hex-to-rgb
 function hex2rgb(hex) {
   hex = hex.replace("#", "");
@@ -25,13 +26,13 @@ function hex2rgb(hex) {
   });
 
   var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-
   return result ? {
     r: parseInt(result[1], 16),
     g: parseInt(result[2], 16),
     b: parseInt(result[3], 16)
   } : null;
 }
+
 //credit:  https://www.figma.com/plugin-docs/creating-ui/
 function clone(val) {
   const type = typeof val
@@ -56,14 +57,19 @@ function clone(val) {
   throw 'unknown'
 }
 
-//credit:  https://www.figma.com/plugin-docs/working-with-images/
-async function colorizeImage(node, color) {
-  for (const paint of node.fills) {
-    if (paint.type === 'IMAGE') {
-      const image = figma.getImageByHash(paint.imageHash)
-      const bytes = await image.getBytesAsync()
-      figma.ui.postMessage({ bytes, color })
+let messageHandler;
+//credit: https://www.figma.com/plugin-docs/working-with-images/
+async function colorizeImage(node, color, removeColor) {
+  if("fills" in node) {
+    for (const paint of node.fills) {
+      if (paint.type === 'IMAGE') {
+        const image = figma.getImageByHash(paint.imageHash)
+        const bytes = await image.getBytesAsync()
+        figma.ui.postMessage({ bytes, color, removeColor })
+      }
     }
+  } else {
+    messageHandler = figma.notify('🖌️ Please select an image. 🎨', { timeout: 3000 })
   }
 }
 
@@ -77,19 +83,23 @@ Capture messages from the UI
 ♡♡♡♡♡♡♡♡♡♡♡♡♡♡♡♡♡♡
 */
 
-figma.ui.onmessage = msg => {
 
+figma.ui.onmessage = msg => {
+  //select current selection
   const selected = figma.currentPage.selection[0] as GeometryMixin;
 
+  //gather original image data to be processed
   if (msg.type === 'colorize') {
 
     if (selected !== undefined) {
-      const color = hex2rgb(msg.color);
-      colorizeImage(selected, color);
-    } else {
-      figma.notify('🖌️ Select an image and update the hex value in the plugin, then click colorize 🎨')
+      if ( msg.color || msg.removeColor ) {
+        const color = hex2rgb(msg.color);
+        const removeColor = hex2rgb(msg.removeColor);
+        colorizeImage(selected, color, removeColor);
+      }
     }
 
+  //apply new image data
   } else if (msg.type === 'newImg') {
 
     const newFills = [];
@@ -102,6 +112,8 @@ figma.ui.onmessage = msg => {
         const newPaint = JSON.parse(JSON.stringify(paint))
         newPaint.imageHash = figma.createImage(bytes).hash
         newFills.push(newPaint)
+
+        messageHandler = figma.notify('✨Done ✨', { timeout: 1000 })
       }
     }
 

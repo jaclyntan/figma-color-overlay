@@ -26,7 +26,7 @@
     src: url("https://rsms.me/inter/font-files/Inter-SemiBold.woff2?v=3.7") format("woff2"), url("https://rsms.me/inter/font-files/Inter-SemiBold.woff2?v=3.7") format("woff");
   }
 
-  .label {
+  label {
     display: -webkit-box;
     display: -ms-flexbox;
     display: flex;
@@ -54,6 +54,7 @@
     border: 2px solid transparent;
     border-radius: 6px;
     outline: none;
+    cursor: pointer;
   }
 
   .button:hover {
@@ -75,10 +76,6 @@
   .input {
     font-family: "Inter", sans-serif;
     font-weight: 400;
-    /* height: 25px; */
-    /* font-size: 11px; */
-    /* line-height: 16px; */
-    /* letter-spacing: 0.005em; */
     position: relative;
     display: -webkit-box;
     display: -ms-flexbox;
@@ -95,6 +92,8 @@
     outline: none;
     background-color: #ffffff;
     margin: 5px 0;
+    width: 100%;
+    height: 29px;
   }
 
   .input:hover {
@@ -132,40 +131,42 @@
     border: 1px solid transparent;
   }
 
-  #wrapper {
-    position: relative;
-  }
-
-  #new-color {
-    width: 100%;
-    height: 30px;
-  }
-
   .picker {
     display: block;
-    width: calc(100% - 30px);
+    width:100%;
   }
 
-  #swatch {
+  .swatch {
     position: absolute;
-    top: 2px;
-    right: 2px;
-    width: 26px;
-    height: 26px;
-    background-color: #000;
+    top:24px;
+    right: 1px;
+    width: 27px;
+    height: 27px;
+    background-color: #FFF;
+    cursor: pointer;
+    outline: 1px solid #DDD
+  }
+  .wrapper {
+    position: relative;
+    border-bottom: 1px solid #DDD;
   }
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/a-color-picker@1.2.1/dist/acolorpicker.min.js"></script>
 <div id="colorize">
-  <div class="label">Color</div>
-  <div id="wrapper">
-    <input type="text" id="new-color" class="input" value="#000" />
-    <div id="swatch"></div>
-    <div id="color" class="picker" acp-show-rgb="no" acp-show-hsl="no" acp-show-hex="no" acp-show-alpha="no"
-      acp-color="#EEE"></div>
+  <div class="wrapper">
+    <label for="new-color">New Color</label>
+    <input type="text" id="new-color" class="input" value="" placeholder="Optional" />
+    <div id="swatch" class="swatch"></div>
+    <div id="color" class="picker" acp-show-rgb="no" acp-show-hsl="no" acp-show-hex="no" acp-show-alpha="no" acp-color="#EEE"></div>
   </div>
 
+  <div class="wrapper">
+    <label for="new-color">Remove Color</label>
+    <input type="text" id="remove-color" class="input" value="" placeholder="Optional" />
+    <div id="swatch-remove" class="swatch"></div>
+    <div id="color-remove" class="picker" acp-show-rgb="no" acp-show-hsl="no" acp-show-hex="no" acp-show-alpha="no" acp-color=""></div>
+  </div>
   <button id="submit" type="submit" value="submit" class="button button--primary">Colorize</button>
 </div>
 
@@ -177,13 +178,21 @@
 
 
 <script>
-  //utils
+  /*!
+  ♡♡♡♡♡♡♡♡♡♡♡♡♡♡♡♡♡♡
+  ♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥
+  Utilities
+  ♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥
+  ♡♡♡♡♡♡♡♡♡♡♡♡♡♡♡♡♡♡
+  */
+
   //credit: https://stackoverflow.com/questions/13070054/convert-rgb-strings-to-hex-in-javascript
   function componentFromStr(numStr, percent) {
     var num = Math.max(0, parseInt(numStr, 10));
     return percent ?
       Math.floor(255 * Math.min(100, num) / 100) : Math.min(255, num);
   }
+
 
   function rgbToHex(rgb) {
     var rgbRegex = /^rgb\(\s*(-?\d+)(%?)\s*,\s*(-?\d+)(%?)\s*,\s*(-?\d+)(%?)\s*\)$/;
@@ -197,69 +206,89 @@
     }
     return hex;
   }
-  const hexField = document.getElementById('color');
-  const swatch = document.getElementById('swatch');
-  const newColor = document.getElementById('new-color');
-  const colorize = document.getElementById('submit');
+
+  /*!
+  ♡♡♡♡♡♡♡♡♡♡♡♡♡♡♡♡♡♡
+  ♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥
+  UI Functionality
+  ♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥
+  ♡♡♡♡♡♡♡♡♡♡♡♡♡♡♡♡♡♡
+  */
+  //loop through the swatch buttons and add a click event to each
+  const swatches = document.querySelectorAll('.swatch');
+  swatches.forEach(function (swatch) {
+    swatch.addEventListener("click", function (event) {
+    const input = swatch.previousElementSibling;
+    const picker = swatch.nextElementSibling;
+      if (picker.childNodes.length === 0) {
+        AColorPicker.from('#'+picker.id, {
+            hueBarSize: [100, 10],
+            slBarSize: [170, 50]
+          })
+          .on('change', (picker, color) => {
+            swatch.style.backgroundColor = color;
+            input.value = '#' + rgbToHex(color)
+          });
+      } else {
+        picker.innerHTML = "";
+      }
+    });
+  });
+
+
+  //function to update each swatch when the input field is updated
   const regEx = /(^#|)+([a-fA-F0-9]{6}|[a-fA-F0-9]{3})$/i;
-  const color = '';
-
-  //select input on click
-  newColor.addEventListener("click", function (event) {
-    this.select();
-  });
-
-  //add a click function and handle the picker etc
-  swatch.addEventListener("click", function (event) {
-    const picker = document.getElementsByClassName("picker");
-    if (hexField.childNodes.length === 0) {
-      AColorPicker.from('#color', {
-          hueBarSize: [120, 11],
-          slBarSize: [200, 100]
-        })
-        .on('change', (picker, color) => {
-          swatch.style.backgroundColor = color;
-          newColor.value = '#' + rgbToHex(color)
-        });
+  function checkColor(elem) {
+    if (regEx.test(elem.value) === true) {
+      elem.nextElementSibling.style.backgroundColor = elem.value;
+      elem.nextElementSibling.nextElementSibling.setAttribute('acp-color', elem.value);
     } else {
-      hexField.innerHTML = "";
-    }
-  });
-
-  //update swatch when hex is changed
-  function checkColor() {
-    let color = newColor.value;
-    const picker = document.getElementsByClassName("picker");
-    if (regEx.test(newColor.value) === true) {
-      swatch.style.backgroundColor = color;
-      picker[0].setAttribute('acp-color', color);
+      elem.nextElementSibling.style.backgroundColor = '';
+      elem.nextElementSibling.nextElementSibling.setAttribute('acp-color', '');
     }
   }
-  newColor.addEventListener('change', checkColor);
-  newColor.addEventListener('keyup', checkColor);
-  newColor.addEventListener('paste', checkColor);
+  //loop through the input fields and add the event listeners
+  const fields = document.querySelectorAll('.input');
+  fields.forEach(function(field) {
+    field.addEventListener('change', function(){checkColor(this)});
+    field.addEventListener('keyup', function(){checkColor(this)});
+    field.addEventListener('paste', function(){checkColor(this)});
+  });
 
-  //check the hex value and send off the data
+
+  //check the hex value of each input field and send off the data when the colorize button is clicked
+  const newColor = document.getElementById('new-color');
+  const removeColor = document.getElementById('remove-color');
+  const colorize = document.getElementById('submit');
   colorize.addEventListener("click", function () {
-    if (regEx.test(newColor.value) === true) {
+    // each input field is now optional so the if conditional is unnecessary, but it may be useful in the future so it remains as is for now
+    // if (regEx.test(newColor.value) === true) {
       parent.postMessage({
         pluginMessage: {
           type: 'colorize',
-          color: newColor.value
+          color: newColor.value,
+          removeColor: removeColor.value
         }
       }, '*')
-    } else {
-      parent.postMessage({
-        pluginMessage: {
-          type: 'hex error',
-          notification: '🖌️ Please enter a valid hex code 🎨'
-        }
-      }, '*')
-    }
+    // } else {
+    //   parent.postMessage({
+    //     pluginMessage: {
+    //       type: 'hex error',
+    //       notification: '🖌️ Please enter a valid hex code 🎨'
+    //     }
+    //   }, '*')
+    // }
   }, false);
 
 
-  //credit:  https://www.figma.com/plugin-docs/working-with-images/
+  /*!
+  ♡♡♡♡♡♡♡♡♡♡♡♡♡♡♡♡♡♡
+  ♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥
+  Image Manipulation
+  ♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥
+  ♡♡♡♡♡♡♡♡♡♡♡♡♡♡♡♡♡♡
+  */
+  //credit: https://www.figma.com/plugin-docs/working-with-images/
   async function encode(canvas, ctx, imageData) {
     ctx.putImageData(imageData, 0, 0)
     return await new Promise((resolve, reject) => {
@@ -272,7 +301,8 @@
     })
   }
 
-  //credit:  https://www.figma.com/plugin-docs/working-with-images/
+
+  //credit: https://www.figma.com/plugin-docs/working-with-images/
   async function decode(canvas, ctx, bytes) {
     const url = URL.createObjectURL(new Blob([bytes]))
     const image = await new Promise((resolve, reject) => {
@@ -288,24 +318,30 @@
     return imageData
   }
 
-  //credit:  https://www.figma.com/plugin-docs/working-with-images/
+
+  //credit: https://www.figma.com/plugin-docs/working-with-images/
   window.onmessage = async (event) => {
     const bytes = event.data.pluginMessage.bytes
     const color = event.data.pluginMessage.color
-
+    const removeColor = event.data.pluginMessage.removeColor
     const canvas = document.createElement('canvas')
     const ctx = canvas.getContext('2d')
-
     const imageData = await decode(canvas, ctx, bytes)
     const pixels = imageData.data
-
-    // colorize the image
+    // colorize the image by looping through each pixel in batches of 4, in accordance to the UInt8Array
     for (let i = 0; i < pixels.length; i += 4) {
-      pixels[i + 0] = color.r
-      pixels[i + 1] = color.g
-      pixels[i + 2] = color.b
+      //first, we check if a color needs to be removed. If a color to remove has been sent, change the alpha in the pixel to 0
+      if(removeColor && pixels[i + 0] === removeColor.r && pixels[i + 1] === removeColor.g && pixels[i + 2] === removeColor.b ) {
+        pixels[i + 3] = 0
+      }
+      //now we can loop through every other pixel and apply the new color overlay, if any
+      if ( color ) {
+        pixels[i + 0] = color.r
+        pixels[i + 1] = color.g
+        pixels[i + 2] = color.b
+      }
     }
-
+    //send the new image data back
     const newBytes = await encode(canvas, ctx, imageData)
     parent.postMessage({
       pluginMessage: {

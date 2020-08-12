@@ -7,7 +7,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-figma.showUI(__html__, { width: 220, height: 300 });
+figma.showUI(__html__, { width: 200, height: 300 });
 /*!
 ♡♡♡♡♡♡♡♡♡♡♡♡♡♡♡♡♡♡
 ♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥
@@ -65,15 +65,21 @@ function clone(val) {
     }
     throw 'unknown';
 }
-//credit:  https://www.figma.com/plugin-docs/working-with-images/
-function colorizeImage(node, color) {
+let messageHandler;
+//credit: https://www.figma.com/plugin-docs/working-with-images/
+function colorizeImage(node, color, removeColor) {
     return __awaiter(this, void 0, void 0, function* () {
-        for (const paint of node.fills) {
-            if (paint.type === 'IMAGE') {
-                const image = figma.getImageByHash(paint.imageHash);
-                const bytes = yield image.getBytesAsync();
-                figma.ui.postMessage({ bytes, color });
+        if ("fills" in node) {
+            for (const paint of node.fills) {
+                if (paint.type === 'IMAGE') {
+                    const image = figma.getImageByHash(paint.imageHash);
+                    const bytes = yield image.getBytesAsync();
+                    figma.ui.postMessage({ bytes, color, removeColor });
+                }
             }
+        }
+        else {
+            messageHandler = figma.notify('🖌️ Please select an image. 🎨', { timeout: 3000 });
         }
     });
 }
@@ -85,15 +91,18 @@ Capture messages from the UI
 ♡♡♡♡♡♡♡♡♡♡♡♡♡♡♡♡♡♡
 */
 figma.ui.onmessage = msg => {
+    //select current selection
     const selected = figma.currentPage.selection[0];
+    //gather original image data to be processed
     if (msg.type === 'colorize') {
         if (selected !== undefined) {
-            const color = hex2rgb(msg.color);
-            colorizeImage(selected, color);
+            if (msg.color || msg.removeColor) {
+                const color = hex2rgb(msg.color);
+                const removeColor = hex2rgb(msg.removeColor);
+                colorizeImage(selected, color, removeColor);
+            }
         }
-        else {
-            figma.notify('🖌️ Select an image and update the hex value in the plugin, then click colorize 🎨');
-        }
+        //apply new image data
     }
     else if (msg.type === 'newImg') {
         const newFills = [];
@@ -105,6 +114,7 @@ figma.ui.onmessage = msg => {
                 const newPaint = JSON.parse(JSON.stringify(paint));
                 newPaint.imageHash = figma.createImage(bytes).hash;
                 newFills.push(newPaint);
+                messageHandler = figma.notify('✨Done ✨', { timeout: 1000 });
             }
         }
         selected.fills = newFills;
