@@ -1,5 +1,9 @@
 ![Color Overlay](artwork.jpg)
+## [Try it out](https://www.figma.com/community/plugin/786223450940846289)
 
+Note: This plugin is now a freemium resource and closed source on Figma. No further code updates will be made on this repository, however you may still download the existing files to learn and use for your personal development.
+
+---
 ## Recolor images right in Figma, saving minutes of precious time.
 
 Now usable with jpegs and pngs with solid backgrounds.
